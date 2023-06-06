@@ -1,0 +1,3 @@
+[submodule "api-gateway-demo-sign-python"]
+	path = api-gateway-demo-sign-python
+	url = https://github.com/aliyun/api-gateway-demo-sign-python.git
