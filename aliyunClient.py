@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
+curPath =os.path.split(__file__)[0]
 
-sys.path.append(r"./api-gateway-demo-sign-python/aliyun-api-gateway-demo-sign3/")
+sys.path.append(fr"{curPath}/api-gateway-demo-sign-python/aliyun-api-gateway-demo-sign3/")
 
 from com.aliyun.api.gateway.sdk import client
 from com.aliyun.api.gateway.sdk.http import request
