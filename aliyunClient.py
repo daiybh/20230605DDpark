@@ -71,6 +71,16 @@ class AliyunClient:
             }       
         '''
         url = "/park/isv/v1/park/create"
+        ret,b=self._doRequest(url,params)
+        if ret==False and b['code']==50852:
+            self.delete_park(params['vendorParkId'])
+            self._doRequest(url,params)
+
+    def delete_park(self,parkid):
+        params={
+        "vendorParkId": parkid
+    }
+        url = "/park/isv/v1/park/delete"
         self._doRequest(url,params)
 
     def update_availablespace(self,params):
