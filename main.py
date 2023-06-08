@@ -51,7 +51,7 @@ def update_availablespace_Thread():
                 }
                 app.logger.debug(f"update_availablespace_Thread acitve{time.ctime()} {params}")
                 aliyunClient.update_availablespace(params)
-                global_LastInfo[info]['lastupdate'] = time.ctime()
+                global_LastInfo['parkinfo'][info]['lastupdate'] = time.ctime()
             except Exception as e:
                 print(e)
                 app.logger.error(f"update_availablespace_Thread error:{e}")
