@@ -2,7 +2,7 @@
 import platform
 
 port=18081
-
+waitTime=60
 sysstr = platform.system()
 if(sysstr=="Linux"):
     baseConfigPath='/home/admin/tenzhoupark/'

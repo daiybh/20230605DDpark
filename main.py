@@ -34,7 +34,7 @@ event= Event()
 def update_availablespace_Thread():
     global global_LastInfo    
     while True:
-        b = event.wait(20)
+        b = event.wait(config.waitTime)
         if b:
             event.clear()
         
@@ -60,7 +60,18 @@ def handle_createPark(park_id):
     global aliyunClient
     params=config.parkInfo[park_id]
     aliyunClient.CreatePark(params)        
-        
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    
+@app.route('/shutdown', methods=['GET'])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+ 
 @app.route('/', methods=['GET'])
 def routRoot():
     global global_LastInfo
