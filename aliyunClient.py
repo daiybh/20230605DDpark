@@ -42,7 +42,7 @@ class AliyunClient:
             status,_,responseText = self.cli.execute(req_post)
             a = json.loads(responseText)
             if a['code'] == 200:
-                return True
+                return True,a
             
         except Exception as e:
             print(e)
@@ -53,7 +53,7 @@ class AliyunClient:
         self.logger.error(f"response:{status} {responseText}")
         self.logger.error(f"response json:{json.dumps(a)}")
         
-        return False
+        return False,a
         
 
     def CreatePark(self,params):
@@ -83,7 +83,7 @@ class AliyunClient:
         
         '''
         url = "/park/isv/v1/park/availablespace/update"    
-        self._doRequest(url,params)
+        return self._doRequest(url,params)
 
     def record_enter(self,params):
         '''params={
@@ -99,7 +99,7 @@ class AliyunClient:
 
         url = "/park/isv/v1/park/record/enter"    
         
-        self._doRequest(url,params)
+        return self._doRequest(url,params)
 
     def record_exit(self,params):   
         '''
@@ -115,7 +115,7 @@ class AliyunClient:
         } '''    
         
         url = "/park/isv/v1/park/record/depart"  
-        self._doRequest(url,params)
+        return self._doRequest(url,params)
 
 
 if __name__ == '__main__':

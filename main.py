@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request,Response
 import requests
 import json
 from aliyunClient import AliyunClient
@@ -19,9 +19,7 @@ handler=TimedRotatingFileHandler(filename=f'{config.baseConfigPath}py_record.log
 handler.setFormatter(formatter)
 
 
-logging.basicConfig(
-                    handlers=[handler],
-                    
+logging.basicConfig(handlers=[handler],                 
                     level=logging.DEBUG, )
 
 app = Flask(__name__)
@@ -29,7 +27,7 @@ app = Flask(__name__)
 aliyunClient= AliyunClient(app.logger)
 
 # "park_id":{"empty_plot":0,"lastUPdateTIme":0}
-global_LastInfo={}
+global_LastInfo={"parkinfo":{},"lastupdate":""}
 # Route to handle incoming data from the parking cloud
 event= Event()
 
@@ -39,16 +37,21 @@ def update_availablespace_Thread():
         b = event.wait(20)
         if b:
             event.clear()
+        
+        global_LastInfo['lastupdate'] = time.ctime()
         app.logger.debug(f"update_availablespace_Thread acitve{time.ctime()} {global_LastInfo}")
-        for info in global_LastInfo:
+        for info in global_LastInfo['parkinfo']:
+            if info==0:
+                continue
             try:
                 params={
                     "vendorParkId": info,
                     "uploadTime": int(time.time()*1000),
-                    "availableSpace": global_LastInfo[info]['empty_plot']
+                    "availableSpace": global_LastInfo['parkinfo'][info]['empty_plot']
                 }
                 app.logger.debug(f"update_availablespace_Thread acitve{time.ctime()} {params}")
                 aliyunClient.update_availablespace(params)
+                global_LastInfo[info]['lastupdate'] = time.ctime()
             except Exception as e:
                 print(e)
                 app.logger.error(f"update_availablespace_Thread error:{e}")
@@ -58,6 +61,10 @@ def handle_createPark(park_id):
     params=config.parkInfo[park_id]
     aliyunClient.CreatePark(params)        
         
+@app.route('/', methods=['GET'])
+def routRoot():
+    global global_LastInfo
+    return json.dumps(global_LastInfo)
 
 @app.route('/out_park', methods=['POST','GET'])  
 @app.route('/in_park', methods=['POST','GET']) 
@@ -68,10 +75,11 @@ def out_in_park():
     app.logger.debug(f'{request.path},>>>{json.dumps(json_body)}')
     park_id=json_body['park_id']
     park_id = f"{park_id}"
-    if park_id not in global_LastInfo:
-        global_LastInfo[park_id]={}
+    if park_id not in global_LastInfo['parkinfo']:
+        global_LastInfo['parkinfo'][park_id]={}
         handle_createPark(park_id)
-    global_LastInfo[park_id]['empty_plot']=json_body['data']['empty_plot']
+    global_LastInfo['parkinfo'][park_id]['empty_plot']=json_body['data']['empty_plot']
+    global_LastInfo['parkinfo'][park_id]['lastrecv']=json_body
     event.set()
     vendorRecordId=json_body['data']['order_id']
     plateNo=json_body['data']['car_number']
@@ -90,7 +98,7 @@ def out_in_park():
             "inChannelName": '无'#'入口'+inChannelId
         }      
 
-        aliyunClient.record_enter(params)
+        code,responseJson=aliyunClient.record_enter(params)
 
     elif request.path=='/out_park':
         params={
@@ -103,7 +111,9 @@ def out_in_park():
             "outChannelId": json_body['data']['out_channel_id'],
             "outChannelName": '无'#'出口'+outChannelId
         }
-        aliyunClient.record_exit(params)
+        code,responseJson=aliyunClient.record_exit(params)
+
+    global_LastInfo['parkinfo'][park_id]['lastresponseFromAliyun']={'code':code,'response':responseJson}
 
 
     reuslt={
@@ -115,6 +125,61 @@ def out_in_park():
 }
     return json.dumps(reuslt)
 
+
+@app.route('/all', methods=['GET'])
+def handle_led_infos():
+    try:            
+        response=''
+        #parkinfos = query_db('''select park_id,park_name,pgmfilepath from parkinfo;''')
+        response+='<section><div><h1>Parks</h1><ul>'
+        for v,k in config.parkInfo.items():  
+            formHtml=f'''<input type="submit" value="delete" onclick="deletepark({v})">'''          
+            response +=f'<li>{formHtml}{k}</li>'
+        response+='</ul></div></section></section>'
+
+        rHtml='''            
+        <html>
+        <script>
+         function setparkAction(form){
+                form.action = "/api/parkinfo/"+form.park_id.value;
+                fetch(form.action, {method:'post', body: new FormData(form)})
+            .then(() =>{
+            window.location.reload();
+            } );
+            return false;
+            }       
+
+        function deletepark(parkid){
+            let deleteurl = "/api/parkinfo/"+parkid;
+            fetch(deleteurl, {method: "DELETE"})
+            .then(() =>{
+            window.location.reload();
+            } );
+        }
+
+        </script>
+        <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css"> 
+        <body>        
+        <section>
+            <div><h1>ADD Parks </h1>
+            <form enctype = "multipart/form-data" onsubmit = "return setparkAction(this)" method="POST">	
+                <p>Park Name: <input type = "text" name = "park_name" /></p>
+                <p>Park id: <input type = "text" name = "park_id" /></p>
+                <p>pgm File: <input type = "file" name = "file" /></p>
+                <input type="text" name="actiontype" value="add" hidden>	
+                <p><input type = "submit" value = "Add" /></p>
+            </form>
+            </div>
+        </section>
+        ''';
+
+        rHtml+=f'''<p>{response}</p>            </body>            </html>'''
+        resp = Response(rHtml,mimetype='text/html')
+        return resp
+    except Exception as e:
+        print(e)
+        return str(e)
+    
 if __name__ == '__main__':
     t1= threading.Thread(target=update_availablespace_Thread).start()
     app.run(host='0.0.0.0',port=config.port, debug=False)
