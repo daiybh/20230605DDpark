@@ -74,15 +74,17 @@ class AliyunClient:
         ret,b=self._doRequest(url,params)
         self.logger.error(f"AAAAAAACreatePark ret:{ret} {b['code']} {b}  {params}")
         if ret==False and b['code']==50852:
-            self.update_park(params)
+            ret,b = self.update_park(params)
         
         self.logger.error(f"BBBBBBBBBBCreatePark ret:{ret} {b}  {params}")
+        return b
             
 
     def update_park(self,params):        
         url = "/park/isv/v1/park/update"
         ret,b= self._doRequest(url,params)
         self.logger.error(f"update_park ret:{ret} {b}  {params}")
+        return ret,b
 
     def update_availablespace(self,params):
         '''

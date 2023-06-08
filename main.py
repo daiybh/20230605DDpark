@@ -81,11 +81,14 @@ def routRoot():
 def createpark():
     global aliyunClient
     global global_LastInfo 
+    r={}
     for park_id in global_LastInfo['parkinfo']:
         if park_id==0:
             continue
         params=config.parkInfo[park_id]
-        aliyunClient.CreatePark(params)
+        a,b= aliyunClient.CreatePark(params)
+        r.append(b)
+    return json.dumps(r)
 
 
 @app.route('/out_park', methods=['POST','GET'])  
