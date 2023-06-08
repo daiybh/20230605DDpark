@@ -72,10 +72,11 @@ class AliyunClient:
         '''
         url = "/park/isv/v1/park/create"
         ret,b=self._doRequest(url,params)
+        self.logger.debug(f"AAAAAAACreatePark ret:{ret} {b['code']} {b}  {params}")
         if ret==False and b['code']==50852:
             self.update_park(params)
         
-        self.logger.debug(f"CreatePark ret:{ret} {b}  {params}")
+        self.logger.debug(f"BBBBBBBBBBCreatePark ret:{ret} {b}  {params}")
             
 
     def update_park(self,params):        
