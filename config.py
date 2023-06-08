@@ -12,8 +12,8 @@ elif(sysstr=="Windows"):
 aliyun={
         "host":"https://api.link.aliyun.com",
         "app_id":"your appId",
-    "app_key":"34396617",
-    "app_secret":"4be931e6b7635cd5e03ef19d6b4f8ddb"
+    "app_key":"34380523",
+    "app_secret":"481d28007527e7d91a5dd963591dd0da"
 }
 
 parkInfo={
