@@ -74,8 +74,8 @@ class AliyunClient:
         ret,b=self._doRequest(url,params)
         if ret==False and b['code']==50852:
             self.update_park(params)
-        else:
-            self.logger.info(f"CreatePark ret:{ret} {b}  {params}")
+        
+        self.logger.info(f"CreatePark ret:{ret} {b}  {params}")
             
 
     def update_park(self,params):        
