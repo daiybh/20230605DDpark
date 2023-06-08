@@ -19,11 +19,11 @@ aliyun={
 parkInfo={
     "10044380":{
         "vendorParkId": "10044380",
-        "parkName":"天鹅座停车场",
-        "address":"无锡市新吴区净慧东路96号",
+        "parkName":"商都酒店停车场",
+        "address":"山东省枣庄市滕州市杏坛路7号",
         "longitude":120.367013,
         "latitude":31.492141,
-        "totalSpace":100,
+        "totalSpace":50,
         "parkEstateType":"PUBLIC_PARKING",
         "parkBusinessType":"OFFICE_BUILDING",
         "pictureUrls":["http://aliyun.com/parking.jpg"]
