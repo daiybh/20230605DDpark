@@ -75,21 +75,10 @@ def shutdown():
 @app.route('/', methods=['GET'])
 def routRoot():
     global global_LastInfo
-    return json.dumps(global_LastInfo)
-
-@app.route('/createpark', methods=['GET'])
-def createpark():
-    global aliyunClient
-    global global_LastInfo 
-    r={}
-    for park_id in global_LastInfo['parkinfo']:
-        if park_id==0:
-            continue
-        params=config.parkInfo[park_id]
-        a,b= aliyunClient.CreatePark(params)
-        r.append(b)
-    return json.dumps(r)
-
+    b = {"info":global_LastInfo,"urls":[]}
+    for a in app.url_map.iter_rules():
+        b['urls'].append(a.rule)
+    return json.dumps(b)
 
 @app.route('/out_park', methods=['POST','GET'])  
 @app.route('/in_park', methods=['POST','GET']) 
@@ -204,7 +193,21 @@ def handle_led_infos():
     except Exception as e:
         print(e)
         return str(e)
-    
+  
+@app.route('/createpark', methods=['GET'])
+def Acreatepark():
+    global aliyunClient
+    global global_LastInfo 
+    r={}
+    for park_id in global_LastInfo['parkinfo']:
+        if park_id==0:
+            continue
+        params=config.parkInfo[park_id]
+        a,b= aliyunClient.CreatePark(params)
+        r.append(b)
+    return json.dumps(r)
+
+  
 if __name__ == '__main__':
     t1= threading.Thread(target=update_availablespace_Thread).start()
     app.run(host='0.0.0.0',port=config.port, debug=False)
