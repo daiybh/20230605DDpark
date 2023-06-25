@@ -1,4 +1,4 @@
-from flask import Flask, request,Response
+from flask import Flask, request,Response,jsonify
 import requests
 import json
 from aliyunClient import AliyunClient
@@ -78,7 +78,7 @@ def routRoot():
     b = {"info":global_LastInfo,"urls":[]}
     for a in app.url_map.iter_rules():
         b['urls'].append(a.rule)
-    return json.dumps(b)
+    return jsonify(b)
 
 @app.route('/out_park', methods=['POST','GET'])  
 @app.route('/in_park', methods=['POST','GET']) 
@@ -137,7 +137,7 @@ def out_in_park():
   "service_name": json_body['service_name'],
   "errmsg": " send success!"
 }
-    return json.dumps(reuslt)
+    return jsonify(reuslt)
 
 
 @app.route('/all', methods=['GET'])
@@ -205,7 +205,7 @@ def Acreatepark():
         params=config.parkInfo[park_id]
         a,b= aliyunClient.CreatePark(params)
         r.append(b)
-    return json.dumps(r)
+    return jsonify(r)
 
   
 if __name__ == '__main__':
