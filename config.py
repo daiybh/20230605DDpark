@@ -1,31 +1,23 @@
 
 import platform
 
-port=18081
+port=18085
 waitTime=60
 sysstr = platform.system()
 if(sysstr=="Linux"):
-    baseConfigPath='/home/admin/tenzhoupark/'
+    baseConfigPath='/home/admin/shuyunPark/'
 elif(sysstr=="Windows"):
-    baseConfigPath='./tenzhoupark/'
+    baseConfigPath='./shuyunPark/'
 
-aliyun={
-        "host":"https://api.link.aliyun.com",
-        "app_id":"your appId",
-    "app_key":"34380523",
-    "app_secret":"481d28007527e7d91a5dd963591dd0da"
-}
+shuyunInfo={
+    'OperatorID':'MA61WH5Y-X',
+    'OperatorSecret':'41DD20CA7EA158C9',
+    'DataSecret':'7EA158C99079009A',
+    'DataSecretIV':'8602818628180248',
+    'SigSecret':'DE0D64B041DD20CA'
+}  
 
-parkInfo={
-    "10044380":{
-        "vendorParkId": "10044380",
-        "parkName":"商都酒店停车场",
-        "address":"山东省枣庄市滕州市杏坛路7号",
-        "longitude":117.16,
-        "latitude":35.09,
-        "totalSpace":50,
-        "parkEstateType":"PUBLIC_PARKING",
-        "parkBusinessType":"OFFICE_BUILDING",
-        "pictureUrls":["http://aliyun.com/parking.jpg"]
-    }
+parkyunInfo={
+    'park_id':10045928,
+    'ukey':"D6P94JBBOAPHN7P7"
 }
