@@ -15,7 +15,7 @@ if not os.path.exists(config.baseConfigPath):
 
 formatter=logging.Formatter('%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 handler=TimedRotatingFileHandler(filename=f'{config.baseConfigPath}py_record.log',
-                                 when='midnight',interval=1,backupCount=10)
+                                 when='midnight',interval=1,backupCount=10,encoding='utf-8')
 handler.setFormatter(formatter)
 
 
@@ -78,33 +78,43 @@ def routRoot():
 @app.route('/query_token', methods=['POST'])
 def handle_query_token():
     json_body = request.json
-    app.logger.debug(f'{request.path},>>>{json.dumps(json_body)}')
+    app.logger.debug(f'{request.path},>>>{json.dumps(json_body,ensure_ascii=False)}') 
+    a = shuyun.decocdeMessage(json_body)
+    if a is None:
+        return Response(status=400)
+    app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
+    responseStatus = {"SuccStat":0,"FailReason":0,
+                      "Token":config.shuyunInfo['OperatorID'],
+                      "TokenAvailableTime":int(time.time()*1000)+config.waitTime*1000,
+                      "OperatorID":config.shuyunInfo['OperatorID'],
+                      }
+    responseJson = shuyun.makeARepsonse(json.dumps(responseStatus,ensure_ascii=False))
+    return jsonify(responseJson)
     
 
 @app.route('/chargeorder', methods=['POST'])
 def handle_chargeorder():
     json_body = request.json
-    app.logger.debug(f'{request.path},>>>{json.dumps(json_body)}')
+    app.logger.debug(f'{request.path},>>>{json.dumps(json_body,ensure_ascii=False)}')
     a = shuyun.decocdeMessage(json_body)
     if a is None:
         return Response(status=400)
     
-    app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a)}')
+    app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
 
     saleValue = a['saleValue']
     carNumber = a['plateNo']
 
     orderInfo = parkyun.queryOrder(carNumber)
-    app.logger.debug(f'{request.path},queryOrder>>>{json.dumps(orderInfo)}')
+    app.logger.debug(f'{request.path},queryOrder>>>{json.dumps(orderInfo,ensure_ascii=False)}')
     if orderInfo['state'] ==1:
         discountInfo = parkyun.discountNotice(carNumber,orderInfo['data']['order_id'],saleValue)
-        app.logger.debug(f'{request.path},discountNotice>>>{json.dumps(discountInfo)}')
+        app.logger.debug(f'{request.path},discountNotice>>>{json.dumps(discountInfo,ensure_ascii=False)}')
 
     responseStatus = {"SuccStat":0,"FailReason":""}
-    responseJson = shuyun.makeARepsonse(json.dumps(responseStatus))
+    responseJson = shuyun.makeARepsonse(json.dumps(responseStatus,ensure_ascii=False))
     return jsonify(responseJson)
 
-if __name__ == '__main__':
-    t1= threading.Thread(target=update_availablespace_Thread).start()
+if __name__ == '__main__':    
     app.run(host='0.0.0.0',port=config.port, debug=False)
-    t1.join()
+
