@@ -84,12 +84,8 @@ def handle_query_token():
     if a is None:
         return Response(status=400)
     app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
-    responseStatus = {"SuccStat":0,"FailReason":0,
-                      "Token":config.shuyunInfo['OperatorID'],
-                      "TokenAvailableTime":int(time.time()*1000)+config.waitTime*1000,
-                      "OperatorID":config.shuyunInfo['OperatorID'],
-                      }
-    responseJson = shuyun.makeARepsonse(json.dumps(responseStatus,ensure_ascii=False))
+
+    responseJson = shuyun.makeTokenResponse()
     return jsonify(responseJson)
     
 
@@ -113,7 +109,7 @@ def handle_chargeorder():
         app.logger.debug(f'{request.path},discountNotice>>>{json.dumps(discountInfo,ensure_ascii=False)}')
 
     responseStatus = {"SuccStat":0,"FailReason":""}
-    responseJson = shuyun.makeARepsonse(json.dumps(responseStatus,ensure_ascii=False))
+    responseJson = shuyun.make_chargeorde_Repsonse(json.dumps(responseStatus,ensure_ascii=False))
     return jsonify(responseJson)
 
 if __name__ == '__main__':    
