@@ -24,6 +24,7 @@ logging.basicConfig(handlers=[handler],
 
 app = Flask(__name__)
 
+app.config['JSON_AS_ASCII'] = False
 
 # "park_id":{"empty_plot":0,"lastUPdateTIme":0}
 global_LastInfo={"parkinfo":{},"lastupdate":""}
