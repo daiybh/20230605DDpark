@@ -72,21 +72,34 @@ def decocdeMessage(message):
         #app.logger.error(f"decocdeMessage error:{e}")
         return None
 
-def makeARepsonse(dataJson,ret=0,msg="请求成功"):
+def make_chargeorde_Repsonse(dataJson,ret=0,msg="请求成功"):
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
     responseJson['Data'] = encrypt(dataJson,config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
     responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
     return responseJson
 
+def makeTokenResponse(ret=0,msg="请求成功"):
+    print("makeTokenResponse--------------")
+    responseStatus = {"SuccStat":0,"FailReason":0,
+                    "Token":config.shuyunInfo['OperatorID'],
+                    "TokenAvailableTime":int(time.time()*1000)+config.waitTime*1000,
+                    "OperatorID":config.shuyunInfo['OperatorID'],
+                    }
+    responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
+    responseJson['Data'] = encrypt(responseStatus.dumps(responseStatus,ensure_ascii=False),config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
+    #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
+    responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
+    return responseJson
+
+
+
 def test():
     shuyundata={"Data": "Y03KgUvj225kvcvVszQ3HTLzjRsZzj0KZ9PVapvGA1JwmvTuBgH6KPsEvFSHt89h02dCLQniDPoSrHwl4COjkpjS7c+bxLyzoLyqK/2hUMnU6dSOtGS03S2Ns6qIcCEEc44cSOxSZHfrRkc+agE4+a26g6BvJugJOa73x70jwAi5QWv0EnQaPVhRvG01PINWhVp8dP5ztSCwhxUR/6oe0aGrDgzfkuydElTBWKSnkcOGZmOQZD1jOgvx76ZeVibMcQI+UCg9YpfgYgoGzFoPPQ==", "OperatorID": "10004", "TimeStamp": "1690959156", "Sig": "3D45105B17D24F1BB1451D0C6FEAE674", "Seq": "853"}
     a = decocdeMessage(shuyundata)
     print(a)
 
-    shuyundata={"Data": "UXxUCkZjGcZgkGkI+DImCCQi4J/8bu3yS6BfNebzSlKH9vYtM4nnjYG5RZ+1BPP1xjTDBbDlw7MkxjuW8YgB99dbe30Dr661DvLfPjz0b+8wTtD9Y5pv1xqeERNBM+Pq0n9dtvhypKZH20GsFDRzkT1FH/uredV/pMiStzyX6+0ruP+ofs5fnjlQMxX0zBcM0cmgf/YrXzNuCP+QAMrAWOO5IPdZzdqriLaX0axC2+PKNctNj7SVQjPuZXWxYLr8", "OperatorID": "10004", "TimeStamp": "1690956084", "Sig": "E4F0EEF18C8442A1EA037263C138875D", "Seq": "545"}
-    a = decocdeMessage(shuyundata)
-    print(a)
-
+    makeTokenResponse()
+    
 if __name__ == '__main__':
     test()
