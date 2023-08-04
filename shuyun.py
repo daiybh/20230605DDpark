@@ -43,34 +43,27 @@ def hmacSign(aValue,sigSecret):
 
 def decocdeMessage(message):
     if 'OperatorID' not in message:
-        print("OperatorID not in message")
-        return None
+        return (None,"OperatorID not in message")        
     if 'Data' not in message:
-        print("Data not in message")
-        return None
+        return (None,"Data not in message")
     if 'TimeStamp' not in message:
-        print("TimeStamp not in message")
-        return None
+        return (None,"TimeStamp not in message")
     if 'Sig' not in message:
-        print("Sig not in message")
-        return None
+        return (None,"Sig not in message")
     if 'Seq' not in message:
-        print("Seq not in message")
-        return None
+        return (None,"Seq not in message")
     
     try:
         data = decrypt(message['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])        
         sig = hmacSign(f"{message['OperatorID']}{message['Data']}{message['TimeStamp']}{message['Seq']}",config.shuyunInfo['SigSecret'])
         if sig != message['Sig']:
-            print("sig not match")
-            return None
+            return (None,"sig not match")
         apos = data.rfind("}")
         dataA=data[:apos+1]
-        return json.loads(dataA)
+        return (json.loads(dataA),"请求成功")
     except Exception as e:
-        print(f"decocdeMessage error:{e}")
+        return (None,f"Exception decocdeMessage error:{e}")
         #app.logger.error(f"decocdeMessage error:{e}")
-        return None
 
 def make_chargeorde_Repsonse(dataJson,ret=0,msg="请求成功"):
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
@@ -81,13 +74,15 @@ def make_chargeorde_Repsonse(dataJson,ret=0,msg="请求成功"):
 
 def makeTokenResponse(ret=0,msg="请求成功"):
     print("makeTokenResponse--------------")
-    responseStatus = {"SuccStat":0,"FailReason":0,
-                    "Token":config.shuyunInfo['OperatorID'],
-                    "TokenAvailableTime":int(time.time()*1000)+config.waitTime*1000,
-                    "OperatorID":config.shuyunInfo['OperatorID'],
+    responseToken = {
+                        "SuccStat":0,
+                        "FailReason":0,
+                        "AccessToken":config.shuyunInfo['token'],
+                        "TokenAvailableTime":int(time.time()*1000)+config.waitTime*1000,
+                        "OperatorID":config.shuyunInfo['OperatorID'],
                     }
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
-    responseJson['Data'] = encrypt(responseStatus.dumps(responseStatus,ensure_ascii=False),config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
+    responseJson['Data'] = encrypt(json.dumps(responseToken,ensure_ascii=False),config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
     responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
     return responseJson
@@ -99,7 +94,22 @@ def test():
     a = decocdeMessage(shuyundata)
     print(a)
 
-    makeTokenResponse()
+    print('+'*20)
+    print("makeTokenResponse====")
+    token = makeTokenResponse()
+    print(json.dumps(token,ensure_ascii=False,indent=4))
+    token = {"Data":"rJthjZsDjdsh8ZFtumqzb/P8RyaXJ36Httbs8KiN5gc2gkWYbndQyd6Qsfepr1Mugaz4c4QJXCU9CA3DYimqDCwMHwpS9EKiQgkgeLW71L4NRzWMHkt95/Dn9//pn5vSxGDhOJYOwl8lApx8cs+VYYJZq/mOXhjlP8eKdEaz18NPCbJLJXNwq9UvTHrZUkP0","Msg":"\u8bf7\u6c42\u6210\u529f","Ret":0,"Sig":"4A60886CDB19E2919F3350268E439EEF"}
+   
+    print('+'*20)
+    print("decryptData===OperatorSecret=")
+    decryptData = decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
+    print(decryptData)
+    
+
+    print('+'*20)
+    print("decryptData===DataSecret=")
+    decryptData = decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
+    print(decryptData)
     
 if __name__ == '__main__':
     test()
