@@ -63,7 +63,7 @@ def handle_query_token():
         global_LastInfo['last_handle_query_token']['json'] = retJson
         global_LastInfo['last_handle_query_token']['time'] = time.time()
         app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(retJson,ensure_ascii=False)}')
-    responseJson = shuyun.makeTokenResponse(ret,message)
+    responseJson = shuyun.makeTokenResponse(ret,message,app.logger)
     app.logger.debug(f'{request.path},responseJson>>>{json.dumps(responseJson,ensure_ascii=False)}')
     return jsonify(responseJson)
     
