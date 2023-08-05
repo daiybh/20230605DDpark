@@ -27,7 +27,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 # "park_id":{"empty_plot":0,"lastUPdateTIme":0}
-global_LastInfo={"parkinfo":{},"last_handle_query_token":{},"last_handle_chargeorder":{}}
+global_LastInfo={"parkinfo":{},"last_handle_query_token":{"json":{},"time":0},"last_handle_chargeorder":{"json":{},"time":0}}
 # Route to handle incoming data from the parking cloud
 event= Event()
 
@@ -60,7 +60,8 @@ def handle_query_token():
         app.logger.debug(f'{request.path},decocdeMessage failed>>>{message}')
     else:
         global global_LastInfo
-        global_LastInfo['last_handle_query_token'] = retJson
+        global_LastInfo['last_handle_query_token']['json'] = retJson
+        global_LastInfo['last_handle_query_token']['time'] = time.time()
         app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(retJson,ensure_ascii=False)}')
     responseJson = shuyun.makeTokenResponse(ret,message)
     app.logger.debug(f'{request.path},responseJson>>>{json.dumps(responseJson,ensure_ascii=False)}')
@@ -85,7 +86,8 @@ def handle_chargeorder():
             app.logger.debug(f'{request.path},decocdeMessage failed>>>{message}')
         else:
             ret =0
-            global_LastInfo['last_handle_chargeorder'] = a
+            global_LastInfo['last_handle_chargeorder']['json'] = a
+            global_LastInfo['last_handle_chargeorder']['time'] = time.time()
             app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
 #{"parkId": "10045928", "endTime": "2023-02-16 15:37:05", "orderNo": "MA005DBW1230216153336221729", "plateNo": "沪A66609", "saleType": 120, "saleValue": 120, "startTime": "2023-02-16 15:33:36"}
             saleValue = a['saleValue']
