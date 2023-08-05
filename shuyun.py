@@ -87,9 +87,13 @@ def makeTokenResponse(ret=0,msg="请求成功",logger=None):
     secret = config.shuyunInfo['OperatorSecret']
     if tokenCount%2==1:
         secret = config.shuyunInfo['DataSecret']
+        logger.debug(f"makeTokenResponse tokenCount:{tokenCount} use DataSecret secret:{secret}")
+    else:
+        logger.debug(f"makeTokenResponse tokenCount:{tokenCount} use OperatorSecret secret:{secret}")
     tokenCount+=1
+    
     jsonStr = json.dumps(responseToken,ensure_ascii=False)
-    logger.debug(f"makeTokenResponse tokenCount:{tokenCount}\n secret:{secret} \njsonStr:{jsonStr}")
+    logger.debug(f"makeTokenResponse jsonStr:{jsonStr}")
     responseJson['Data'] = encrypt(jsonStr,config.shuyunInfo['DataSecretIV'],secret)
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
     responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
