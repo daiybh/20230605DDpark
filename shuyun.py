@@ -84,11 +84,11 @@ def makeTokenResponse(ret=0,msg="请求成功",logger=None):
                         "OperatorID":config.shuyunInfo['OperatorID'],
                     }
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
-    secret = config.shuyunInfo['OperatorSecret']
     
-
+    secret = config.shuyunInfo['DataSecret']    
     jsonStr = json.dumps(responseToken,ensure_ascii=False)
-    logger.debug(f"makeTokenResponse jsonStr:{jsonStr}")
+    if logger:
+        logger.debug(f"makeTokenResponse jsonStr:{jsonStr}")
     responseJson['Data'] = encrypt(jsonStr,config.shuyunInfo['DataSecretIV'],secret)
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
     responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
@@ -105,18 +105,14 @@ def test():
     print("makeTokenResponse====")
     token = makeTokenResponse()
     print(json.dumps(token,ensure_ascii=False,indent=4))
-    token = {"Data":"rJthjZsDjdsh8ZFtumqzb/P8RyaXJ36Httbs8KiN5gc2gkWYbndQyd6Qsfepr1Mugaz4c4QJXCU9CA3DYimqDCwMHwpS9EKiQgkgeLW71L4NRzWMHkt95/Dn9//pn5vSxGDhOJYOwl8lApx8cs+VYYJZq/mOXhjlP8eKdEaz18NPCbJLJXNwq9UvTHrZUkP0","Msg":"\u8bf7\u6c42\u6210\u529f","Ret":0,"Sig":"4A60886CDB19E2919F3350268E439EEF"}
-   
-    print('+'*20)
-    print("decryptData===OperatorSecret=")
-    decryptData = decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
-    print(decryptData)
     
-
     print('+'*20)
     print("decryptData===DataSecret=")
+    print("iv:",config.shuyunInfo['DataSecretIV'])
+    print("secret:",config.shuyunInfo['DataSecret'])
     decryptData = decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
     print(decryptData)
+    
     
 if __name__ == '__main__':
     test()
