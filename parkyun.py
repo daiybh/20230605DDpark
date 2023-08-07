@@ -68,6 +68,7 @@ def discountNotice(car_number,parkId,order_id,saleValue):
 
 
 def testchargeorder(car_number,saleValue):
+    park_id = '10045928'
     orderInfo = queryOrder(car_number)
     print(orderInfo)
     if orderInfo['state'] !=1:
