@@ -15,6 +15,8 @@ import shuyun
 import parkyun
 
 
+config.shuyunInfo['token']=shuyun.GererateToken()
+
 formatter = logging.Formatter(
     '%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 handler = TimedRotatingFileHandler(filename=f'{config.baseConfigPath}py_record.log',

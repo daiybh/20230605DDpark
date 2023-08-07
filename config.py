@@ -34,7 +34,6 @@ def ReadJson():
         f = open(jsonPath, 'r')
         if f:
             parkyunInfos = json.load(f)
-            print(parkyunInfos)
             f.close()
             return True
     except Exception as e:
