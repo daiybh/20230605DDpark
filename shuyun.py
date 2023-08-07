@@ -85,13 +85,8 @@ def makeTokenResponse(ret=0,msg="请求成功",logger=None):
                     }
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
     secret = config.shuyunInfo['OperatorSecret']
-    if tokenCount%2==1:
-        secret = config.shuyunInfo['DataSecret']
-        logger.debug(f"makeTokenResponse tokenCount:{tokenCount} use DataSecret secret:{secret}")
-    else:
-        logger.debug(f"makeTokenResponse tokenCount:{tokenCount} use OperatorSecret secret:{secret}")
-    tokenCount+=1
     
+
     jsonStr = json.dumps(responseToken,ensure_ascii=False)
     logger.debug(f"makeTokenResponse jsonStr:{jsonStr}")
     responseJson['Data'] = encrypt(jsonStr,config.shuyunInfo['DataSecretIV'],secret)
