@@ -106,13 +106,10 @@ def handle_chargeorder():
     elif auth.type != 'bearer' or auth.token != config.shuyunInfo['token']:
         message = "Unauthorized"
         app.logger.debug(f'{request.path},auth[type:{auth.type}] failed>>>{message}  auth.token[{auth.token}],current token[{config.shuyunInfo["token"]}]')
-    else:
-
+    
+    if ret==1:
         json_body = request.get_json()
-        app.logger.debug(
-            f'{request.path},>>>{json.dumps(json_body,ensure_ascii=False)}')
-# {"Data": "Y03KgUvj225kvcvVszQ3HTLzjRsZzj0KZ9PVapvGA1JwmvTuBgH6KPsEvFSHt89h02dCLQniDPoSrHwl4COjkpjS7c+bxLyzoLyqK/2hUMnU6dSOtGS03S2Ns6qIcCEEc44cSOxSZHfrRkc+agE4+a26g6BvJugJOa73x70jwAi5QWv0EnQaPVhRvG01PINWhVp8dP5ztSCwhxUR/6oe0aGrDgzfkuydElTBWKSnkcOGZmOQZD1jOgvx76ZeVibMcQI+UCg9YpfgYgoGzFoPPQ==", "OperatorID": "10004", "TimeStamp": "1691039453", "Sig": "3B10EFC59AA7395F94B3E38BBA162CFD", "Seq": "107"}
-
+        app.logger.debug(f'{request.path},>>>{json.dumps(json_body,ensure_ascii=False)}')
         a, message = shuyun.decocdeMessage(json_body)
         if a is None:
             app.logger.debug(
@@ -120,27 +117,22 @@ def handle_chargeorder():
         else:
             ret = 0
             updateLastHandleChargeorder(a)
-            app.logger.debug(
-                f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
-# {"parkId": "10045928", "endTime": "2023-02-16 15:37:05", "orderNo": "MA005DBW1230216153336221729", "plateNo": "沪A66609", "saleType": 120, "saleValue": 120, "startTime": "2023-02-16 15:33:36"}
+            app.logger.debug(f'{request.path},decocdeMessage data>>>{json.dumps(a,ensure_ascii=False)}')
             saleValue = a['saleValue']
             carNumber = a['plateNo']
             parkId = a['parkId']
 
             orderInfo = parkyun.queryOrder(carNumber, parkId)
-            app.logger.debug(
-                f'{request.path},queryOrder>>>{json.dumps(orderInfo,ensure_ascii=False)}')
+            app.logger.debug(f'{request.path},queryOrder>>>{json.dumps(orderInfo,ensure_ascii=False)}')
             if orderInfo['state'] == 1:
                 discountInfo = parkyun.discountNotice(
                     carNumber, parkId, orderInfo['data']['order_id'], saleValue)
-                app.logger.debug(
-                    f'{request.path},discountNotice>>>{json.dumps(discountInfo,ensure_ascii=False)}')
+                app.logger.debug(f'{request.path},discountNotice>>>{json.dumps(discountInfo,ensure_ascii=False)}')
 
     responseStatus = {"SuccStat": 0, "FailReason": ""}
     responseJson = shuyun.make_chargeorde_Repsonse(
         json.dumps(responseStatus, ensure_ascii=False), ret, message)
-    app.logger.debug(
-        f'{request.path},responseJson>>>{json.dumps(responseJson,ensure_ascii=False)}')
+    app.logger.debug(f'{request.path},responseJson>>>{json.dumps(responseJson,ensure_ascii=False)}')
     return jsonify(responseJson)
 
 
