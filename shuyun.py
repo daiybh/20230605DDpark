@@ -1,45 +1,7 @@
 import json,config,time
 
-import base64
 
-from Crypto.Cipher import AES
-
-
-def encrypt(data,dataSecretIV,dataSecret):
-    dataSecretIV = bytes(dataSecretIV, encoding='utf-8')
-    dataSecret = bytes(dataSecret, encoding='utf-8')
-    data = bytes(data, encoding='utf-8')
-    cipher = AES.new(dataSecret, AES.MODE_CBC, dataSecretIV)
-    # 余数
-    remainder = len(data) % AES.block_size
-    # 补足16位
-    if remainder != 0:
-        data += b'\0' * (AES.block_size - remainder)
-    msg = cipher.encrypt(data)
-    return base64.b64encode(msg).decode('utf-8')
-
-def decrypt(data,dataSecretIV,dataSecret):
-    dataSecretIV = bytes(dataSecretIV, encoding='utf-8')
-    dataSecret = bytes(dataSecret, encoding='utf-8')
-    data = bytes(data, encoding='utf-8')
-    cipher = AES.new(dataSecret, AES.MODE_CBC, dataSecretIV)
-    # 余数
-    remainder = len(data) % AES.block_size
-    # 补足16位
-    if remainder != 0:
-        data += b'\0' * (AES.block_size - remainder)
-    msg = cipher.decrypt(base64.b64decode(data))
-    return msg.decode('utf-8').rstrip('\0')
-
-def hmacSign(aValue,sigSecret):
-    import hmac
-    import hashlib
-
-    sigSecret = bytes(sigSecret, encoding='utf-8')
-    aValue = bytes(aValue, encoding='utf-8')
-    return hmac.new(sigSecret, aValue, hashlib.md5).hexdigest().upper()
-
-
+import shuyunAES
 
 def decocdeMessage(message):
     if 'OperatorID' not in message:
@@ -54,22 +16,21 @@ def decocdeMessage(message):
         return (None,"Seq not in message")
     
     try:
-        data = decrypt(message['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])        
-        sig = hmacSign(f"{message['OperatorID']}{message['Data']}{message['TimeStamp']}{message['Seq']}",config.shuyunInfo['SigSecret'])
+        data = shuyunAES.decrypt(message['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])        
+        sig = shuyunAES.hmacSign(f"{message['OperatorID']}{message['Data']}{message['TimeStamp']}{message['Seq']}",config.shuyunInfo['SigSecret'])
         if sig != message['Sig']:
             return (None,"sig not match")
-        apos = data.rfind("}")
-        dataA=data[:apos+1]
-        return (json.loads(dataA),"请求成功")
+        
+        return (json.loads(data),"请求成功")
     except Exception as e:
         return (None,f"Exception decocdeMessage error:{e}")
         #app.logger.error(f"decocdeMessage error:{e}")
 
 def make_chargeorde_Repsonse(dataJson,ret=0,msg="请求成功"):
     responseJson = {"Data":"J3OPNG7s6nVbKeCHQVDs0g==","Msg":msg,"Ret":ret,"Sig":"15163CB3D8D950E7E4C4450B2D39A08A"}
-    responseJson['Data'] = encrypt(dataJson,config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
+    responseJson['Data'] = shuyunAES.encrypt(dataJson,config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
-    responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
+    responseJson['Sig'] = shuyunAES.hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
     return responseJson
 
 tokenCount=0
@@ -77,7 +38,7 @@ tokenCount=0
 def GererateToken():    
     import uuid
     tokenSrc = f"{config.shuyunInfo['OperatorID']}{uuid.uuid1()}"
-    token = encrypt(tokenSrc,config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
+    token = shuyunAES.encrypt(tokenSrc,config.shuyunInfo['DataSecretIV'],config.shuyunInfo['OperatorSecret'])
     return token
 
 def makeTokenResponse(ret=0,msg="请求成功",logger=None):
@@ -86,7 +47,7 @@ def makeTokenResponse(ret=0,msg="请求成功",logger=None):
     responseToken = {
                         "SuccStat":0,
                         "FailReason":0,
-                        "AccessToken":config.shuyunInfo['token'],
+                        "AccessToken":GererateToken(),
                         "TokenAvailableTime":7200,
                         "OperatorID":config.shuyunInfo['OperatorID'],
                     }    
@@ -95,9 +56,9 @@ def makeTokenResponse(ret=0,msg="请求成功",logger=None):
     jsonStr = json.dumps(responseToken,ensure_ascii=False)
     if logger:
         logger.debug(f"makeTokenResponse jsonStr:{jsonStr}")
-    responseJson['Data'] = encrypt(jsonStr,config.shuyunInfo['DataSecretIV'],secret)
+    responseJson['Data'] = shuyunAES.encrypt(jsonStr,config.shuyunInfo['DataSecretIV'],secret)
     #拼接顺序为返回值（Ret）、返回信息（Msg）、参数内容（Data）。
-    responseJson['Sig'] = hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
+    responseJson['Sig'] = shuyunAES.hmacSign(f"{ret}{msg}{responseJson['Data']}",config.shuyunInfo['SigSecret'])
     return responseJson
 
 
@@ -109,6 +70,9 @@ def test():
 
     print('+'*20)
     print("makeTokenResponse====")
+    
+    config.shuyunInfo['token']=GererateToken()
+
     token = makeTokenResponse()
     print(json.dumps(token,ensure_ascii=False,indent=4))
     
@@ -116,22 +80,22 @@ def test():
     print("decryptData===DataSecret=")
     print("iv:",config.shuyunInfo['DataSecretIV'])
     print("secret:",config.shuyunInfo['DataSecret'])
-    decryptData = decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
+    decryptData = shuyunAES.decrypt(token['Data'],config.shuyunInfo['DataSecretIV'],config.shuyunInfo['DataSecret'])
     print(decryptData)
     
 
 def decodeTest():
     encodedMsg ='ActIhQ1JwfQv+uR2akHV5p/bes5VnoDKi6y+UyioKynZZA3w5jWDQF5pg6BcI/5mKEpEnEiecfCaPGxhu/B68DwN/dsmAp1OvU3I+DQ4m1I5Zh6RPiMlB2tsQrDHTBjUXWkb7GIhCCCiVzOTcBJ3s+KyAksKNwm4DlVuXZOYJvLRlRhOB15YzjbfhO1Bz8hTK21bJGKPu9XlzP+emh8NugRwLrMahkgBI3xtTqt47o4='
-    data = decrypt(encodedMsg,'pJPClgUKoLNyLYQv','w1rTWx7tRK6VMtu0')    
+    data = shuyunAES.decrypt(encodedMsg,'pJPClgUKoLNyLYQv','w1rTWx7tRK6VMtu0')    
     print("\n Decoded Msg\n",data)
 
     
 
-    myEncodedMsg = encrypt(data,'pJPClgUKoLNyLYQv','w1rTWx7tRK6VMtu0')
+    myEncodedMsg = shuyunAES.encrypt(data,'pJPClgUKoLNyLYQv','w1rTWx7tRK6VMtu0')
     print("\n myEncodedMsg\n",myEncodedMsg)
     print("\n encodedMsg\n",encodedMsg)
     print("\n \n myEncodedMsg==decodedMsg:",myEncodedMsg==encodedMsg)
     print("\n"*5)
     
 if __name__ == '__main__':
-    decodeTest()
+    test()
