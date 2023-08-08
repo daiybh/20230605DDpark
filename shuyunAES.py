@@ -4,7 +4,7 @@ from Crypto.Cipher import AES
 from Crypto.Cipher import AES
 
 class MyAes:
-    def encrypt(data,dataSecretIV,dataSecret):
+    def encrypt(self,data,dataSecretIV,dataSecret):
         dataSecretIV = bytes(dataSecretIV, encoding='utf-8')
         dataSecret = bytes(dataSecret, encoding='utf-8')
         data = bytes(data, encoding='utf-8')
@@ -17,7 +17,7 @@ class MyAes:
         msg = cipher.encrypt(data)
         return base64.b64encode(msg).decode('utf-8')
 
-    def decrypt(data,dataSecretIV,dataSecret):
+    def decrypt(self,data,dataSecretIV,dataSecret):
         dataSecretIV = bytes(dataSecretIV, encoding='utf-8')
         dataSecret = bytes(dataSecret, encoding='utf-8')
         data = bytes(data, encoding='utf-8')
@@ -77,14 +77,29 @@ def decrypt(data,dataSecretIV,dataSecret):
 
 
 if __name__ == '__main__':
-    aes_encrypt = AES_ENCRYPT()
+    key='7EA158C99079009A'
+    IV='8602818628180248'
+    aes_encrypt = AES_ENCRYPT(key,IV)    
+    myaes = MyAes()
+
     origin='{"SuccStat":0,"TokenAvailableTime":7200,"AccessToken":"FVYBoyQzNN7c6QQtLNGtB/wrZqzn09BuzLpHxM7aRZaC4CLtnyl5NvnnEOPet+Jg","OperatorID":"MA01R636X","FailReason":0}'
-    # encryptResult = aes_encrypt.encrypt(origin)
-    # print(encryptResult)
-    # encrypt="ActIhQ1JwfQv+uR2akHV5p/bes5VnoDKi6y+UyioKynZZA3w5jWDQF5pg6BcI/5mKEpEnEiecfCaPGxhu/B68DwN/dsmAp1OvU3I+DQ4m1I5Zh6RPiMlB2tsQrDHTBjUXWkb7GIhCCCiVzOTcBJ3s+KyAksKNwm4DlVuXZOYJvLRlRhOB15YzjbfhO1Bz8hTK21bJGKPu9XlzP+emh8NugRwLrMahkgBI3xtTqt47o4="
-    encrypt='wpmHajRHMYn7xOSGM/kUqkxQUAd2VxsX8QfW12L0UOO2UpCvlKahs5CJgfU5jv6O'
-    d = aes_encrypt.decrypt(encrypt)
-    print(d)
+    
+    res = aes_encrypt.encrypt(origin)
+    print(res)
+    res4 = aes_encrypt.decrypt(res)
+    print(res4)
+
+
+    res2 = myaes.encrypt(origin,IV,key)
+    print(res2)
+
+    res3 = myaes.decrypt(res2,IV,key)
+    print(res3)
+
+    print("*"*20)
+    res5 = aes_encrypt.decrypt(res2)
+    print(res5)
+
 
 
     
