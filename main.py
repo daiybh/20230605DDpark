@@ -100,9 +100,12 @@ def handle_chargeorder():
     auth = request.authorization
     ret = 1
     message = ""
-    if not auth or auth.type != 'bearer' or auth.token != config.shuyunInfo['token']:
+    if not auth :
+        message="no auth info"
+        app.logger.debug(f'{request.path},no auth info>>>{message}')
+    elif auth.type != 'bearer' or auth.token != config.shuyunInfo['token']:
         message = "Unauthorized"
-        app.logger.debug(f'{request.path},auth[{auth}] failed>>>{message}  ,current token[{config.shuyunInfo["token"]}]')
+        app.logger.debug(f'{request.path},auth[type:{auth.type}] failed>>>{message}  auth.token[{auth.token}],current token[{config.shuyunInfo["token"]}]')
     else:
 
         json_body = request.get_json()
