@@ -125,8 +125,8 @@ def handle_chargeorder():
             orderInfo = parkyun.queryOrder(carNumber, parkId)
             app.logger.debug(f'{request.path},queryOrder>>>{json.dumps(orderInfo,ensure_ascii=False)}')
             if orderInfo['state'] == 1:
-                discountInfo = parkyun.discountNotice(
-                    carNumber, parkId, orderInfo['data']['order_id'], saleValue)
+                discountInfo = parkyun.discountNotice(app.logger,
+                    orderInfo['data']['order_id'],shuyunJson=a)
                 app.logger.debug(f'{request.path},discountNotice>>>{json.dumps(discountInfo,ensure_ascii=False)}')
 
     responseStatus = {"SuccStat": 0, "FailReason": ""}
