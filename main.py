@@ -256,6 +256,10 @@ class ParkInfo(Resource):
 api = Api(app)
 api.add_resource(ParkInfo, '/api/parkinfo/<int:park_id>')
 
-
+import gitversion
 if __name__ == '__main__':
+    app.logger.debug('\n')
+    app.logger.debug(f'**********start**********')
+    app.logger.debug(f'**********{gitversion.get_git_version()}**********')
+    app.logger.debug('\n')
     app.run(host='0.0.0.0', port=config.port, debug=False)
