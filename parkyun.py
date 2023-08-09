@@ -19,7 +19,7 @@ def test():
 
 
 
-def queryOrder(car_number,park_id):
+def queryOrder(logger,car_number,park_id):
     url = "http://istparking.sciseetech.com/public/order/queryOrder"
     query_time=int(time.time())
     payload = {"service_name":"query_order",
@@ -29,38 +29,47 @@ def queryOrder(car_number,park_id):
                }
      
     payload["sign"] = makeSign(payload,parkid=park_id) 
+    logger.debug(f'queryOrder payload >>{payload}')
     headers = {"content-type": "application/json"}
     response = requests.request("POST", url, json=payload, headers=headers)
     return response.json()
 
 
 
-def discountNotice(car_number,parkId,order_id,saleValue):
+def discountNotice(logger,order_id,shuyunJson):
     #下发优惠信息
     #URL如下
     #http://istparking.sciseetech.com/public/charge/discountNotice
     #阿里云向停车云下发优惠信息
-
+ 
+ #>{"orderNo": "MA005DBW1230809062617020720", 
+ # "plateNo": "浙ABP9387", 
+ # "saleType": "1", 
+ # "saleValue": "120", 
+ # "startTime": "2023-08-09 06:26:16", 
+ # "endTime": "2023-08-09 07:20:18", 
+ # "parkId": "10045928"}
     url='http://istparking.sciseetech.com/public/charge/discountNotice'
     payload ={
             "service_name": "charge_discount_notice",
             "sign": "60B6FB3106DE9EB45D0CA01BDA0DE160",
-            "park_id": parkId,
+            "park_id": shuyunJson['parkId'],
             "data": 
                 {
-                    "car_number": car_number,
+                    "car_number": shuyunJson['plateNo'],
                     "order_id": order_id,
-                    "reduce_amount": 8.0,
-                    "deduction_time": 4,
-                    "deduction_money": 5,
-                    "duration": saleValue,
+                    "reduce_amount": 0,
+                    "deduction_time": 0,
+                    "deduction_money": 0,
+                    "duration": shuyunJson['saleValue'],
                     "remark": "remark",
-                    "start_charging_time": "2020-08-27 00:02:09",
-                    "stop_charging_time": "2020-08-27 00:25:07",
-                    "uuid": "de6c26a945c9478295d7cffa7631d7f9"
+                    "start_charging_time": shuyunJson['startTime'],
+                    "stop_charging_time": shuyunJson['endTime'],
+                    "uuid": shuyunJson['orderNo']
                 }
             }
     payload["sign"] = makeSign(payload,parkid=parkId) 
+    logger.debug(f'discountNotice payload >>{payload}')
     headers = {"content-type": "application/json"}
     response = requests.request("POST", url, json=payload, headers=headers)
     return response.json()
