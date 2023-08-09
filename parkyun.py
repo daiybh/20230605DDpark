@@ -68,7 +68,7 @@ def discountNotice(logger,order_id,shuyunJson):
                     "uuid": shuyunJson['orderNo']
                 }
             }
-    payload["sign"] = makeSign(payload,parkid=parkId) 
+    payload["sign"] = makeSign(payload,parkid=shuyunJson['parkId']) 
     logger.debug(f'discountNotice payload >>{payload}')
     headers = {"content-type": "application/json"}
     response = requests.request("POST", url, json=payload, headers=headers)
