@@ -122,7 +122,7 @@ def handle_chargeorder():
             carNumber = a['plateNo']
             parkId = a['parkId']
 
-            orderInfo = parkyun.queryOrder(carNumber, parkId)
+            orderInfo = parkyun.queryOrder(app.logger,carNumber, parkId)
             app.logger.debug(f'{request.path},queryOrder>>>{json.dumps(orderInfo,ensure_ascii=False)}')
             if orderInfo['state'] == 1:
                 discountInfo = parkyun.discountNotice(app.logger,
