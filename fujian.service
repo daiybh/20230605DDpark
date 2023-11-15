@@ -1,0 +1,11 @@
+[Unit]
+Description=福建车位对接20231115
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=python3 /home/admin/codes/fzpark20231115/main.py
+
+[Install]
+WantedBy=multi-user.target
