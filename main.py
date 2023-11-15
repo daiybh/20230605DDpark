@@ -59,8 +59,13 @@ def routRoot():
 @app.route('/api/getPots', methods=['GET'])
 def get_mutil_potinfo():
 
-    service_name=request.args.get('service_name')
-    Pot_id=request.args.get('pot_id')
+    if request.is_json:
+        json_body = request.json
+        service_name=json_body['service_name']
+        Pot_id=json_body['pot_id']
+    else:
+        service_name=request.args.get('service_name')
+        Pot_id=request.args.get('pot_id')
 
     if service_name!="Select_pot":
         return jsonify({"state":0,"errmsg":"service_name error"})
