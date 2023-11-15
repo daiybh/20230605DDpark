@@ -48,10 +48,11 @@ def shutdown():
 @app.route('/', methods=['GET'])
 def routRoot():
     global global_LastInfo
+    global global_Parkinfo
     b = {"info":global_LastInfo,"urls":[]}
     for a in app.url_map.iter_rules():
         b['urls'].append(a.rule)
-    b["parkinfo"]=config.parkInfo
+    b["parkinfo"]=global_Parkinfo
     
     return jsonify(b)
 
