@@ -78,6 +78,7 @@ def get_mutil_potinfo():
     }
     for parkinfo in global_Parkinfo:
         park_id=parkinfo['park_id']
+        print(park_id)
         if park_id  in global_LastInfo['parkinfo']:   
             parkinfo['use_pot']=global_LastInfo['parkinfo'][park_id]['empty_plot']
             time_str = global_LastInfo['parkinfo'][park_id]['lastUPdateTime']
@@ -96,8 +97,7 @@ def out_in_park():
     json_body = request.json
     
     app.logger.debug(f'{request.path},>>>{json.dumps(json_body)}')
-    park_id=json_body['park_id']
-    park_id = f"{park_id}"
+    park_id=json_body['park_id']    
     if park_id not in global_LastInfo['parkinfo']:
         global_LastInfo['parkinfo'][park_id]={}
         
