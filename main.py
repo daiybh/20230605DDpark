@@ -1,7 +1,7 @@
 from flask import Flask, request,Response,jsonify
 import requests
 import json
-from aliyunClient import AliyunClient
+
 from  threading import Thread,Event
 import threading,time
 from time import sleep
@@ -23,43 +23,16 @@ logging.basicConfig(handlers=[handler],
                     level=logging.DEBUG, )
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
-aliyunClient= AliyunClient(app.logger)
 
 # "park_id":{"empty_plot":0,"lastUPdateTIme":0}
 global_LastInfo={"parkinfo":{},"lastupdate":""}
+global_Parkinfo=config.parkInfo
 # Route to handle incoming data from the parking cloud
 event= Event()
 
-def update_availablespace_Thread():
-    global global_LastInfo    
-    while True:
-        b = event.wait(config.waitTime)
-        if b:
-            event.clear()
-        
-        global_LastInfo['lastupdate'] = time.ctime()
-        app.logger.debug(f"update_availablespace_Thread acitve{time.ctime()} {global_LastInfo}")
-        for info in global_LastInfo['parkinfo']:
-            if info==0:
-                continue
-            try:
-                params={
-                    "vendorParkId": info,
-                    "uploadTime": int(time.time()*1000),
-                    "availableSpace": global_LastInfo['parkinfo'][info]['empty_plot']
-                }
-                app.logger.debug(f"update_availablespace_Thread acitve{time.ctime()} {params}")
-                aliyunClient.update_availablespace(params)
-                global_LastInfo['parkinfo'][info]['lastupdate'] = time.ctime()
-            except Exception as e:
-                print(e)
-                app.logger.error(f"update_availablespace_Thread error:{e}")
-
-def handle_createPark(park_id):
-    global aliyunClient
-    params=config.parkInfo[park_id]
-    aliyunClient.CreatePark(params)        
+    
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
@@ -78,10 +51,45 @@ def routRoot():
     b = {"info":global_LastInfo,"urls":[]}
     for a in app.url_map.iter_rules():
         b['urls'].append(a.rule)
+    b["parkinfo"]=config.parkInfo
+    
     return jsonify(b)
 
-@app.route('/out_park', methods=['POST','GET'])  
-@app.route('/in_park', methods=['POST','GET']) 
+@app.route('/api/getPots', methods=['GET'])
+def get_mutil_potinfo():
+
+    service_name=request.args.get('service_name')
+    Pot_id=request.args.get('pot_id')
+
+    if service_name!="Select_pot":
+        return jsonify({"state":0,"errmsg":"service_name error"})
+    if Pot_id!="DL2023115":
+        return jsonify({"state":0,"errmsg":"pot_id error"})
+
+    global global_LastInfo
+    global global_Parkinfo
+
+    global_LastInfo['lastupdate']=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    result={
+        "state":1,
+        "errmsg":"",
+        "data":[]
+    }
+    for parkinfo in global_Parkinfo:
+        park_id=parkinfo['park_id']
+        if park_id  in global_LastInfo['parkinfo']:   
+            parkinfo['use_pot']=global_LastInfo['parkinfo'][park_id]['empty_plot']
+            time_str = global_LastInfo['parkinfo'][park_id]['lastUPdateTime']
+            format_str = "%Y-%m-%d %H:%M:%S"
+
+            timestamp = int(time.mktime(time.strptime(time_str, format_str)))
+            parkinfo['uptime']=    timestamp
+        result['data'].append(parkinfo)
+
+    return jsonify(result)
+
+@app.route('/outpark', methods=['POST','GET'])  
+@app.route('/inpark', methods=['POST','GET']) 
 def out_in_park():
     global global_LastInfo    
     json_body = request.json
@@ -91,44 +99,10 @@ def out_in_park():
     park_id = f"{park_id}"
     if park_id not in global_LastInfo['parkinfo']:
         global_LastInfo['parkinfo'][park_id]={}
-        handle_createPark(park_id)
+        
     global_LastInfo['parkinfo'][park_id]['empty_plot']=json_body['data']['empty_plot']
     global_LastInfo['parkinfo'][park_id]['lastrecv']=json_body
-    event.set()
-    vendorRecordId=json_body['data']['order_id']
-    plateNo=json_body['data']['car_number']
-    plateColor="GREEN" if len(plateNo)==7 else "BLUE"
-    
-    if request.path=='/in_park':
-        in_time=json_body['data']['in_time']        
-        params={
-            "vendorParkId": park_id,
-            "vendorRecordId": vendorRecordId,
-            "plateNo": plateNo,
-            "plateColor": plateColor,
-            "inTime":     in_time*1000,
-            "inPictureUrl": json_body['data']['pic_addr'],
-            "inChannelId": json_body['data']['in_channel_id'],
-            "inChannelName": '无'#'入口'+inChannelId
-        }      
-
-        code,responseJson=aliyunClient.record_enter(params)
-
-    elif request.path=='/out_park':
-        params={
-           "vendorParkId": park_id,
-            "vendorRecordId": vendorRecordId,
-            "plateNo": plateNo,
-            "plateColor": plateColor,
-            "outTime": json_body['data']['out_time']*1000,
-            "outPictureUrl": json_body['data']['pic_addr'],
-            "outChannelId": json_body['data']['out_channel_id'],
-            "outChannelName": '无'#'出口'+outChannelId
-        }
-        code,responseJson=aliyunClient.record_exit(params)
-
-    global_LastInfo['parkinfo'][park_id]['lastresponseFromAliyun']={'code':code,'response':responseJson}
-
+    global_LastInfo['parkinfo'][park_id]['lastUPdateTime']=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
     reuslt={
   "state": 1,
@@ -208,7 +182,6 @@ def Acreatepark():
     return jsonify(r)
 
   
-if __name__ == '__main__':
-    t1= threading.Thread(target=update_availablespace_Thread).start()
+if __name__ == '__main__':    
     app.run(host='0.0.0.0',port=config.port, debug=False)
-    t1.join()
+    
