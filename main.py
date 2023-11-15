@@ -77,8 +77,7 @@ def get_mutil_potinfo():
         "data":[]
     }
     for parkinfo in global_Parkinfo:
-        park_id=parkinfo['park_id']
-        print(park_id)
+        park_id=parkinfo['park_id']        
         if park_id  in global_LastInfo['parkinfo']:   
             parkinfo['use_pot']=global_LastInfo['parkinfo'][park_id]['empty_plot']
             time_str = global_LastInfo['parkinfo'][park_id]['lastUPdateTime']
