@@ -11,7 +11,7 @@ elif(sysstr=="Windows"):
 
 parkInfo=[
     {
-        "park_id":"10035698",
+        "park_id":10035698,
         "parkName":"仙居县城北东路人民医院斜对面",
         "address":"仙居东门停车场",
         "longitude":"120.751084",
@@ -21,7 +21,7 @@ parkInfo=[
         "use_pot":0
     },
     {
-        "park_id":"10048502",
+        "park_id":10048502,
         "parkName":"西门公园地下停车场",
         "address":"仙居县环城南路西门公园地下",
         "longitude":"120.73614",
@@ -31,7 +31,7 @@ parkInfo=[
         "use_pot":0
     },
     {
-        "park_id":"10036032",
+        "park_id":10036032,
         "parkName":"梦家园保障房小区停车场",
         "address":"仙居县泰和北路梦家园小区",
         "longitude":"120.723703",
@@ -41,7 +41,7 @@ parkInfo=[
         "use_pot":0
     },
     {
-        "park_id":"10048505",
+        "park_id":10048505,
         "parkName":"仙居市民公园地下停车场",
         "address":"仙居市民公园地下停车场",
         "longitude":"120.731635",
@@ -51,7 +51,7 @@ parkInfo=[
         "use_pot":0
     },
     {
-        "park_id":"10045410",
+        "park_id":10045410,
         "parkName":"环城西路城西停车场",
         "address":"仙居环城西路城西菜场内",
         "longitude":"120.732529",
