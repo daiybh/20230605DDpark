@@ -85,11 +85,8 @@ def get_mutil_potinfo():
         park_id=parkinfo['park_id']        
         if park_id  in global_LastInfo['parkinfo']:   
             parkinfo['use_pot']=global_LastInfo['parkinfo'][park_id]['empty_plot']
-            time_str = global_LastInfo['parkinfo'][park_id]['lastUPdateTime']
-            format_str = "%Y-%m-%d %H:%M:%S"
-
-            timestamp = int(time.mktime(time.strptime(time_str, format_str)))
-            parkinfo['uptime']=    timestamp
+            time_str = global_LastInfo['parkinfo'][park_id]['lastUPdateTime']            
+            parkinfo['uptime']=    time_str
         result['data'].append(parkinfo)
 
     return jsonify(result)
