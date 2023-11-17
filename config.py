@@ -12,8 +12,8 @@ elif(sysstr=="Windows"):
 parkInfo=[
     {
         "park_id":10048571,
-        "parkName":"仙居县城北东路人民医院斜对面",
-        "address":"仙居东门停车场",
+        "parkName":"仙居东门停车场",
+        "address":"仙居县城北东路人民医院斜对面",
         "longitude":"120.751084",
         "latitude":"28.864096",
         "sum_pot":170,
