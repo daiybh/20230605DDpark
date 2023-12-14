@@ -9,7 +9,6 @@ if(sysstr=="Linux"):
 elif(sysstr=="Windows"):
     baseConfigPath='./zjhuagong/'
 
-companyId="d663b502-7ebb-4425-b3f2-1406d7e6edfa"
 
 # 读取RSA私钥
 

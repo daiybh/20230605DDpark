@@ -37,10 +37,10 @@ event= Event()
 
     
 
-@app.route('/gettoken', methods=['GET'])
-def getToken():
+
+def getToken(companyId):
   payload={
-    "companyId": config.companyId,
+    "companyId": companyId,
     "iat": int(time.time()),
     "jti": str(uuid.uuid4())
   }
@@ -66,7 +66,7 @@ def postTo(companyId,inoutType,plateNumber,deviceId,deviceName):
     "deviceName": deviceName
   }
   headers = {
-      "Authorization": "Bearer "+getToken()
+      "Authorization": "Bearer "+getToken(companyId)
   }
   import requests
 
