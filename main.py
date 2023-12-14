@@ -77,6 +77,7 @@ def postTo(companyId,inoutType,plateNumber,deviceId,deviceName):
   if x.status_code!=200:
     app.logger.error("code"+x.text)
     app.logger.error("playload"+json.dumps(playload,ensure_ascii=False))
+    return {"status_code":x.status_code}
 
   pj = x.json()
   if pj['code']!='0':
@@ -84,7 +85,7 @@ def postTo(companyId,inoutType,plateNumber,deviceId,deviceName):
   
   app.logger.error("postto result-->"+json.dumps(pj,ensure_ascii=False))
   
-  return pj['code']
+  return pj
 
 
 
@@ -174,14 +175,14 @@ def out_in_park():
         return jsonify({"state":0,"errmsg":"park_id error"})
     
     companyId = config.parkInfo[str(park_id)]['companyId']
-    postTo(companyId,inOutType,json_body['data']['car_number'],device_id,device_name)
+    ret = postTo(companyId,inOutType,json_body['data']['car_number'],device_id,device_name)
 
     reuslt={
   "state": 1,
   "order_id": json_body['data']['order_id'],
   "park_id": park_id,
   "service_name": json_body['service_name'],
-  "errmsg": " send success!"
+  "errmsg": json.dumps(ret,ensure_ascii=False)
 }
     return jsonify(reuslt)
 
