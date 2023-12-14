@@ -47,9 +47,11 @@ def getToken(companyId):
   header={
     "alg": "RS256"
   }
-  
+  app.logger.info("getToken payload",payload)
   # 生成JWT令牌
   token = jwt.encode(payload, config.private_key,headers=header, algorithm='RS256')  
+  
+  app.logger.info("getToken token",token)
   return token
 
 
