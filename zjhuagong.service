@@ -1,11 +1,11 @@
 [Unit]
-Description=福建车位对接20231115
+Description=镇江化工园区20231206
 After=network.target
 
 [Service]
 Type=simple
 Restart=always
-ExecStart=python3 /home/admin/codes/fzpark20231115/main.py
+ExecStart=python3 /home/admin/codes/20231206zjhuagong/main.py
 
 [Install]
 WantedBy=multi-user.target

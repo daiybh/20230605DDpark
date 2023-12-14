@@ -9,13 +9,16 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import config
+import jwt
+import time
+import uuid
 
 if not os.path.exists(config.baseConfigPath):
     os.makedirs(config.baseConfigPath)
 
 formatter=logging.Formatter('%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 handler=TimedRotatingFileHandler(filename=f'{config.baseConfigPath}py_record.log',
-                                 when='midnight',interval=1,backupCount=10)
+                                 when='midnight',interval=1,backupCount=10,encoding='utf-8')
 handler.setFormatter(formatter)
 
 
@@ -33,6 +36,53 @@ global_Parkinfo=config.parkInfo
 event= Event()
 
     
+
+@app.route('/gettoken', methods=['GET'])
+def getToken():
+  payload={
+    "companyId": config.companyId,
+    "iat": int(time.time()),
+    "jti": str(uuid.uuid4())
+  }
+  header={
+    "alg": "RS256"
+  }
+  
+  # 生成JWT令牌
+  token = jwt.encode(payload, config.private_key,headers=header, algorithm='RS256')  
+  return token
+
+
+
+
+def postTo(companyId,inoutType,plateNumber,deviceId,deviceName):
+  url="https://www.zjxclcyy.com/extension/open-api/bayonet/car-inout/record"
+
+  playload={
+  "companyCode":companyId,
+  "plateNumber":plateNumber,
+  "inoutType": str(inoutType),
+    "deviceId": deviceId,
+    "deviceName": deviceName
+  }
+  headers = {
+      "Authorization": "Bearer "+getToken()
+  }
+  import requests
+
+  x = requests.post(url,json=playload,headers=headers)
+
+  if x.status_code!=200:
+    app.logger.error("code",x.text)
+    app.logger.error("playload",playload)
+
+  pj = x.json()
+  if pj['code']!='0':
+    app.logger.error("playload",playload)
+    app.logger.error("errorcode",pj)
+  return pj['code']
+
+
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
@@ -97,14 +147,30 @@ def out_in_park():
     global global_LastInfo    
     json_body = request.json
     
-    app.logger.debug(f'{request.path},>>>{json.dumps(json_body)}')
+    app.logger.debug(f'{request.path},>>>{json.dumps(json_body,ensure_ascii=False)}')
     park_id=json_body['park_id']    
     if park_id not in global_LastInfo['parkinfo']:
         global_LastInfo['parkinfo'][park_id]={}
         
-    global_LastInfo['parkinfo'][park_id]['empty_plot']=json_body['data']['empty_plot']
+    global_LastInfo['parkinfo'][park_id]['car_number']=json_body['data']['car_number']
     global_LastInfo['parkinfo'][park_id]['lastrecv']=json_body
     global_LastInfo['parkinfo'][park_id]['lastUPdateTime']=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    #1：出 0：进
+    
+    
+    if request.path == '/inpark' :
+        inOutType=0
+        device_name="大门入口"
+        device_id = json_body['data']['in_channel_id']
+    elif request.path == '/outpark' :
+        inOutType=1
+        device_name="大门出口"
+        device_id = json_body['data']['out_channel_id']
+    if str(park_id) not in config.parkInfo    :
+        return jsonify({"state":0,"errmsg":"park_id error"})
+    
+    companyId = config.parkInfo[str(park_id)]['companyId']
+    postTo(companyId,inOutType,json_body['data']['car_number'],device_id,device_name)
 
     reuslt={
   "state": 1,

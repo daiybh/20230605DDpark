@@ -1,13 +1,6 @@
-
-import platform
-
-port=18088
-waitTime=60
-sysstr = platform.system()
-if(sysstr=="Linux"):
-    baseConfigPath='/home/admin/zjhuagong/'
-elif(sysstr=="Windows"):
-    baseConfigPath='./zjhuagong/'
+import jwt
+import time
+import uuid
 
 companyId="d663b502-7ebb-4425-b3f2-1406d7e6edfa"
 
@@ -34,6 +27,48 @@ ZeNq4DkaK2Kr0pU=
 with open('./privateKey.pem', 'r') as f:
     private_key = f.read()
 
-import parkInfo
 
-parkInfo = parkInfo.parkInfo
+def getToken():
+  payload={
+    "companyId": companyId,
+    "iat": int(time.time()),
+    "jti": str(uuid.uuid4())
+  }
+  header={
+    "alg": "RS256"
+  }
+  print(payload)
+  # 生成JWT令牌
+  token = jwt.encode(payload, private_key,headers=header, algorithm='RS256')
+
+  print(token)
+  return token
+
+
+
+
+def postTo(plateNumber):
+  url="https://www.zjxclcyy.com/extension/open-api/bayonet/car-inout/record"
+
+  playload={
+  "companyCode":companyId,
+  "plateNumber":plateNumber,
+  "inoutType": "0",
+    "deviceId": "test",
+    "deviceName": "测试"
+  }
+  print(playload)
+  headers = {
+      "Authorization": "Bearer "+getToken()
+  }
+  import requests
+
+  x = requests.post(url,json=playload,headers=headers)
+
+  print(x)
+  print("code",x.status_code)
+  pj = x.json()
+  return pj['code']
+
+
+postTo('川A12345')
