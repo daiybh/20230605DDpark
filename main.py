@@ -75,13 +75,15 @@ def postTo(companyId,inoutType,plateNumber,deviceId,deviceName):
   x = requests.post(url,json=playload,headers=headers)
 
   if x.status_code!=200:
-    app.logger.error("code",x.text)
-    app.logger.error("playload",playload)
+    app.logger.error("code"+x.text)
+    app.logger.error("playload"+json.dumps(playload,ensure_ascii=False))
 
   pj = x.json()
   if pj['code']!='0':
-    app.logger.error("playload",playload)
-    app.logger.error("errorcode",pj)
+    app.logger.error("playload"+json.dumps(playload,ensure_ascii=False))
+  
+  app.logger.error("postto result-->"+json.dumps(pj,ensure_ascii=False))
+  
   return pj['code']
 
 
