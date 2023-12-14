@@ -31,8 +31,9 @@ ZeNq4DkaK2Kr0pU=
 -----END RSA PRIVATE KEY-----'''
 
 
-with open('./privateKey.pem', 'r') as f:
-    private_key = f.read()
+
+#with open('./privateKey.pem', 'r') as f:
+#    private_key = f.read()
 
 import parkInfo
 
